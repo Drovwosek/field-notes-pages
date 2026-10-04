@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Граф заполнения лида</title>
+    <style>
+      :root { color: #111827; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+      * { box-sizing: border-box; }
+      body { min-width: 320px; margin: 0; }
+      main { padding: 16px; }
+      #diagram { overflow: auto; }
+      .mermaid { min-width: 1340px; padding: 8px; }
+      .mermaid svg { display: block; max-width: none; }
+      @media (max-width: 600px) { main { padding: 12px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="diagram" aria-label="Граф заполнения лида">
+        <pre class="mermaid">
+flowchart TD
+    scan["Сканировать бейдж"] --> contact["Тип контакта"]
+
+    contact -->|"Потенциальный клиент"| product["Какой продукт нужен?"]
+    contact -->|"Действующий клиент"| customerProduct["Какой продукт обсуждали?"]
+    contact -->|"Партнёр или Другое"| optionalNote["Важные детали (необязательно)"]
+
+    customerProduct -->|"LMS, Создание курсов или Другое"| customerNote["Что сказал клиент? *"]
+    customerNote -->|"Сохранить лида"| saved["Лид сохранён"]
+
+    product -->|"LMS, Создание курсов или Другое"| solution["Какое решение использует сейчас?"]
+    solution -->|"Articulate, Cornerstone или Docebo"| reason["Почему хочет сменить решение?"]
+    solution -->|"Другое"| otherSolution["Название решения *"]
+    solution -->|"Нет решения или Не обсуждали"| start["Когда начнут пользоваться?"]
+    otherSolution -->|"Указать название"| reason
+
+    reason -->|"Не хватает функций, Слишком много инструментов, Низкая вовлечённость, Заканчивается контракт, Привязка к вендору или Не обсуждали"| start
+    reason -->|"Другое"| otherReason["Причина *"]
+    otherReason -->|"Указать причину"| start
+
+    start -->|"До 3 месяцев, 3–6 месяцев, Более 6 месяцев или Не обсуждали"| agreement["О чём договорились?"]
+    agreement -->|"Провести демо, Назначить созвон или Дать тестовый доступ"| contactWindow["Когда может связаться отдел продаж?"]
+    agreement -->|"Отправить информацию"| information["Что нужно отправить? *"]
+    agreement -->|"Не договорились"| optionalNote
+    information -->|"Указать информацию"| contactWindow
+
+    contactWindow -->|"После мероприятия или Не обсуждали"| optionalNote
+    contactWindow -->|"Через 1–14 дней"| delay["Через сколько дней? *"]
+    delay -->|"Указать 1–14 дней"| optionalNote
+
+    optionalNote -->|"Сохранить лида"| saved
+
+    classDef question fill:#f8fafc,stroke:#334155,color:#111827,stroke-width:1px;
+    classDef field fill:#ffffff,stroke:#334155,color:#111827,stroke-width:1px,stroke-dasharray:4 3;
+    classDef saved fill:#ecfdf5,stroke:#15803d,color:#166534,stroke-width:1px;
+    class scan,contact,product,customerProduct,solution,reason,start,agreement,contactWindow question;
+    class customerNote,otherSolution,otherReason,information,delay,optionalNote field;
+    class saved saved;
+        </pre>
+      </div>
+    </main>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs'
+
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'base',
+        themeVariables: {
+          fontFamily: 'Arial, Helvetica, sans-serif',
+          primaryColor: '#f8fafc',
+          primaryTextColor: '#111827',
+          primaryBorderColor: '#334155',
+          lineColor: '#475569',
+          secondaryColor: '#ffffff',
+          tertiaryColor: '#ffffff',
+          edgeLabelBackground: '#ffffff'
+        },
+        flowchart: {
+          htmlLabels: true,
+          curve: 'linear',
+          nodeSpacing: 42,
+          rankSpacing: 64,
+          padding: 12,
+          useMaxWidth: false
+        }
+      })
+
+      const graph = document.querySelector('.mermaid')
+      const { svg, bindFunctions } = await mermaid.render('lead-capture-graph', graph.textContent.trim())
+      graph.innerHTML = svg
+      bindFunctions?.(graph)
+    </script>
+  </body>
+</html>
